@@ -1,0 +1,126 @@
+@import "breakpoints.scss";
+
+.header {
+  background-color: #323232;
+
+  &__container {
+    padding-top: 22px;
+    padding-bottom: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+
+@include big-desctop {
+  padding-top: 25px;
+}
+
+  }
+
+  &__logo {
+    margin-right: 138px;
+
+    @include big-desctop {
+      width: 170px;
+      margin-right: 82px;
+    }
+
+    @include table {
+      margin-right: auto;
+      padding-top: 27px;
+      padding-bottom: 15px;
+
+    }
+  }
+}
+
+.menulimiter {
+  margin-right: auto;
+
+  @include table {
+    width: 100%;
+    padding: 15px 0;
+    overflow: scroll;
+    order: 3;
+    white-space: nowrap;
+  }
+
+}
+
+.nav {
+
+  &__list {
+    gap: 82px;
+
+    @include big-desctop {
+      gap: 33px;
+    }
+
+    @include table {
+      gap: 76px;
+    }
+  }
+
+  &__item {
+    cursor: pointer;
+
+
+    @include table {
+      padding: 0;
+    }
+
+    &-link {
+      color: white;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 21px;
+      text-align: left;
+      background-color: inherit;
+      transition: color .3s ease-in-out, background-color .3s ease-in-out;
+
+      &:focus {
+        outline: none;
+        background-color: #BC572B;
+      }
+
+      &:hover {
+        background-color: inherit;
+        color: #FF6E30;
+      }
+
+      &:active {
+        background-color: inherit;
+        color: #CE4307;
+      }
+    }
+  }
+
+
+}
+
+.btn__header {
+  background-color: transparent;
+  display: inline-block;
+  position: relative;
+  border: none;
+}
+
+.search path {
+  fill: white;
+  transition: fill 0.3s ease-in-out;
+}
+
+.btn__header:focus .search path {
+  fill: #CE4307;
+}
+
+.btn__header:focus {
+  outline: none;
+}
+
+.btn__header:hover .search path {
+  fill: #FF6E30;
+}
+
+.btn__header:active .search path {
+  fill: #BC572B;
+
+}

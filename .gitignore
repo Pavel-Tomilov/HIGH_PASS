@@ -1,3 +1,5 @@
-node_modules
+# Исключить папку node_modules
+node_modules/
 
-dist
+# Исключить папку с готовым кодом (dist)
+dist/

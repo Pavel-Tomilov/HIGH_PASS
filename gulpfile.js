@@ -1,4 +1,5 @@
 const { src, dest, series, watch } = require('gulp');
+const sass = require('gulp-sass')(require('sass'));
 const concat = require('gulp-concat');
 const htmlmin = require('gulp-htmlmin');
 const autoprefixer = require('gulp-autoprefixer');
@@ -11,90 +12,97 @@ const del = require('del');
 const uglify = require('gulp-uglify-es').default;
 const browserSync = require('browser-sync').create();
 
-// Очистка папки dist
-const clean = () => del(['dist']);
 
-// Обработка стилей
-const styles = () => {
-    return src(['src/styles/**/*.css'])
-        .pipe(sourcemaps.init())
-        .pipe(concat('styles/main.css'))
-        .pipe(autoprefixer({ cascade: false }))
-        .pipe(cleanCss({ level: 2 }))
-        .pipe(sourcemaps.write('.'))
-        .pipe(dest('dist'))
-        .pipe(browserSync.stream());
+const clean = () => {
+  return del(['dist']);
 };
 
-// Normalize.css (отдельно)
-const stylesNorm = () => {
-    return src('src/vendor/normalize.css')
-        .pipe(dest('dist/styles'))
-        .pipe(browserSync.stream());
+
+const stylesScss = () => {
+  return src('src/styles/**/*.scss')
+    .pipe(sourcemaps.init())
+    .pipe(sass().on('error', sass.logError))
+    .pipe(autoprefixer({ cascade: false }))
+    .pipe(cleanCss({ level: 2 }))
+    .pipe(concat('style.css'))
+    .pipe(sourcemaps.write('.'))
+    .pipe(dest('dist/styles'))
+    .pipe(browserSync.stream());
 };
 
-// Минификация HTML
+
 const htmlMinify = () => {
-    return src('src/**/*.html')
-        .pipe(htmlmin({ collapseWhitespace: true }))
-        .pipe(dest('dist'))
-        .pipe(browserSync.stream());
+  return src('src/**/*.html')
+    .pipe(htmlmin({ collapseWhitespace: true }))
+    .pipe(dest('dist'))
+    .pipe(browserSync.stream());
 };
 
-// Обработка JavaScript
-const scripts = () => {
-    return src([
-        'src/js/components/**/*.js',
-        'src/js/main.js'
-    ])
-        .pipe(sourcemaps.init())
-        .pipe(babel({ presets: ['@babel/preset-env'] }))
-        .pipe(concat('app.js'))
-        .pipe(uglify().on('error', notify.onError()))
-        .pipe(sourcemaps.write('.'))
-        .pipe(dest('dist'))
-        .pipe(browserSync.stream());
+
+const stylesNorm = () => {
+  return src('src/vendor/normalize.css')
+    .pipe(concat('normalize.css'))
+    .pipe(autoprefixer({ cascade: false }))
+    .pipe(cleanCss({ level: 2 }))
+    .pipe(dest('dist/styles'))
+    .pipe(browserSync.stream());
 };
 
-// Обработка изображений
-const images = () => {
-    return src([
-        'src/image/**/*.jpg',
-        'src/image/**/*.png',
-        'src/image/**/*.svg',
-        'src/image/**/*.jpeg',
-    ], { encoding: false })
-        .pipe(image())
-        .pipe(dest('dist/image'));
-};
 
-// Обработка favicon
 const favicon = () => {
-    return src('src/image/favicon.*')
-        .pipe(dest('dist/image'));
+  return src([
+    'src/image/favicon.ico',
+    'src/image/favicon.png',
+    'src/image/favicon.svg'
+  ], { allowEmpty: true })
+    .pipe(dest('dist/image'));
 };
 
-// Обработка шрифтов
+
+const scripts = () => {
+  return src([
+    'src/js/main.js'
+  ])
+    .pipe(babel({ presets: ['@babel/preset-env'] }))
+    .pipe(concat('app.js'))
+    .pipe(dest('dist'))
+    .pipe(browserSync.stream());
+};
+
+
+const images = () => {
+  return src([
+    'src/image/**/*.jpg',
+    'src/image/**/*.png',
+    'src/image/**/*.svg',
+    'src/image/**/*.jpeg',
+  ], { encoding: false })
+    .pipe(image())
+    .pipe(dest('dist/image'));
+};
+
+
 const fonts = () => {
-    return src('src/fonts/**/*.woff2')
-        .pipe(dest('dist/fonts'));
+  return src('src/fonts/**/*.{woff,woff2}', {encoding:false}) // Берём оба формата
+    .pipe(dest('dist/fonts'));
 };
 
 // Наблюдение за изменениями
 const watchFiles = () => {
-    browserSync.init({ server: { baseDir: 'dist' } });
+  browserSync.init({
+    server: { baseDir: 'dist' }
+  });
 
-    watch('src/**/*.html', htmlMinify);
-    watch('src/styles/**/*.css', styles);
-    watch('src/vendor/normalize.css', stylesNorm);
-    watch('src/js/**/*.js', scripts);
-    watch('src/image/favicon.*', favicon);
-    watch('src/fonts/**/*.woff2', fonts);
+  watch('src/**/*.html', htmlMinify);
+  watch('src/styles/**/*.scss', stylesScss); // Теперь следит за SCSS
+  watch('src/vendor/normalize.css', stylesNorm);
+  watch('src/js/**/*.js', scripts);
+  watch('src/image/favicon.*', favicon);
+  watch('src/fonts/**/*.{woff,woff2}', fonts);
 };
 
-// Экспорт задач
 exports.clean = clean;
-exports.styles = styles;
+exports.stylesScss = stylesScss;
 exports.htmlMinify = htmlMinify;
 exports.scripts = scripts;
 exports.images = images;
@@ -102,7 +110,4 @@ exports.stylesNorm = stylesNorm;
 exports.favicon = favicon;
 exports.fonts = fonts;
 
-// Запуск по умолчанию
-exports.default = series(clean, fonts, favicon, htmlMinify, scripts, styles, stylesNorm, images, watchFiles);
-// Отдельный билд без watch
-exports.build = series(clean, fonts, favicon, htmlMinify, scripts, styles, stylesNorm, images);
+exports.default = series(clean, fonts, favicon, htmlMinify, stylesScss, scripts, stylesNorm, images, watchFiles);
